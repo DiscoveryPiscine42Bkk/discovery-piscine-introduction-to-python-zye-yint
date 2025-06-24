@@ -3,4 +3,4 @@ passcode = int(input("Enter the password: "))
 if passcode == password :
   print ("ACCESS GRANTED")
 else:
-  print ("ACCESS DENIED")
+  print ("ACCESS DENIED.")

@@ -1,61 +1,63 @@
 #!/usr/bin/env python3
-def checkmate(board_string):
-    board = [list(row) for row in board_string.strip().split('\n')]
-    size = len(board)
-    
-    # Find King's position
-    king_pos = None
-    for y in range(size):
-        for x in range(len(board[y])):
-            if board[y][x] == 'K':
-                king_pos = (y, x)
-                break
-        if king_pos:
-            break
+def is_king_attacked(board_str):
+    grid = build_board(board_str)
+    n = len(grid)
 
-    if not king_pos:
-        print("Fail")  # No king = auto-fail
+    if not all(len(row) == n for row in grid):
+        print("Error")
         return
 
-    def in_bounds(y, x):
-        return 0 <= y < size and 0 <= x < len(board[y])
-
-    def is_clear_path(y, x, dy, dx):
-        y += dy
-        x += dx
-        while in_bounds(y, x):
-            if board[y][x] == '.':
-                y += dy
-                x += dx
+    for row in range(n):
+        for col in range(n):
+            piece = grid[row][col]
+            if piece is None:
                 continue
-            return (y, x)
-        return None
 
-    yk, xk = king_pos
+            attacks = find_attacks(piece, row, col, grid)
+            for x, y in attacks:
+                if grid[x][y] == 'K':
+                    print("Success")
+                    return
+    print("Error")
 
-    # Check for Pawn threats (assuming pawns attack from bottom to top)
-    for dy, dx in [(-1, -1), (-1, 1)]:
-        yp, xp = yk + dy, xk + dx
-        if in_bounds(yp, xp) and board[yp][xp] == 'P':
-            print("Success")
-            return
 
-    # Check for Rook or Queen in straight lines
-    for dy, dx in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-        found = is_clear_path(yk, xk, dy, dx)
-        if found:
-            fy, fx = found
-            if board[fy][fx] in ('R', 'Q'):
-                print("Success")
-                return
+def build_board(board_str):
+    rows = board_str.strip().splitlines()
+    return [[char if char != '.' else None for char in row.strip()] for row in rows]
 
-    # Check for Bishop or Queen in diagonals
-    for dy, dx in [(-1, -1), (-1, 1), (1, -1), (1, 1)]:
-        found = is_clear_path(yk, xk, dy, dx)
-        if found:
-            fy, fx = found
-            if board[fy][fx] in ('B', 'Q'):
-                print("Success")
-                return
 
-    print("Fail")
+def find_attacks(piece, x, y, board):
+    if piece == 'P':
+        return pawn_attacks(x, y, board)
+    if piece == 'B':
+        return sliding_attacks(x, y, board, [(-1, -1), (-1, 1), (1, -1), (1, 1)])
+    if piece == 'R':
+        return sliding_attacks(x, y, board, [(-1, 0), (1, 0), (0, -1), (0, 1)])
+    if piece == 'Q':
+        return sliding_attacks(x, y, board, [(-1, -1), (-1, 1), (1, -1), (1, 1), (-1, 0), (1, 0), (0, -1), (0, 1)])
+    return []
+
+
+def pawn_attacks(x, y, board):
+    targets = []
+    if x > 0:
+        if y > 0:
+            targets.append((x - 1, y - 1))
+        if y < len(board[0]) - 1:
+            targets.append((x - 1, y + 1))
+    return targets
+
+
+def sliding_attacks(x, y, board, directions):
+    n = len(board)
+    attacks = []
+
+    for dx, dy in directions:
+        nx, ny = x + dx, y + dy
+        while 0 <= nx < n and 0 <= ny < n:
+            attacks.append((nx, ny))
+            if board[nx][ny] is not None:
+                break
+            nx += dx
+            ny += dy
+    return attacks

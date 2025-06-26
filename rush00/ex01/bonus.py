@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import sys
-from checkmate import checkmate
+from checkmate import is_king_attacked
 
 def is_valid_board(lines):
     length = len(lines[0])

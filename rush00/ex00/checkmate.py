@@ -1,4 +1,4 @@
-
+#!/usr/bin/env python3
 def checkmate(board_string):
     board = [list(row) for row in board_string.strip().split('\n')]
     size = len(board)
